@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Streamify - Web Player</title>
+    <link rel="stylesheet" href="global.css">
+    <script>
+        // Fetch user data and playlists after login
+        async function fetchUserData() {
+            const accessToken = localStorage.getItem('access_token'); 
+            if (!accessToken) {
+                window.location.href = 'index.html'; // Redirect to login if token is not found
+                return;
+            }
+
+            try {
+                // Fetch user profile
+                const userProfileResponse = await fetch('https://api.spotify.com/v1/me', {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                const userProfile = await userProfileResponse.json();
+                document.getElementById('user-info').innerText = `Logged in as: ${userProfile.display_name}`;
+
+                // Fetch playlists
+                const playlistsResponse = await fetch('https://api.spotify.com/v1/me/playlists', {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                const playlists = await playlistsResponse.json();
+                displayPlaylists(playlists.items);
+
+                // Fetch liked songs
+                const likedSongsResponse = await fetch('https://api.spotify.com/v1/me/tracks', {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                const likedSongs = await likedSongsResponse.json();
+                displayLikedSongs(likedSongs.items);
+
+                // Fetch recently played tracks
+                const recentlyPlayedResponse = await fetch('https://api.spotify.com/v1/me/player/recently-played', {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+                const recentlyPlayed = await recentlyPlayedResponse.json();
+                displayRecentlyPlayed(recentlyPlayed.items);
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Function to display playlists
+        function displayPlaylists(playlists) {
+            const playlistsContainer = document.getElementById('playlists');
+            playlistsContainer.innerHTML = ''; 
+            playlists.forEach(playlist => {
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="${playlist.external_urls.spotify}" target="_blank">${playlist.name}</a>`;
+                playlistsContainer.appendChild(li);
+            });
+        }
+
+        // Function to display liked songs
+        function displayLikedSongs(songs) {
+            const likedSongsContainer = document.getElementById('liked-songs');
+            likedSongsContainer.innerHTML = ''; 
+            songs.forEach(item => {
+                const song = item.track;
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="${song.external_urls.spotify}" target="_blank">${song.name} by ${song.artists.map(artist => artist.name).join(', ')}</a>`;
+                likedSongsContainer.appendChild(li);
+            });
+        }
+
+        // Function to display recently played tracks
+        function displayRecentlyPlayed(tracks) {
+            const recentlyPlayedContainer = document.getElementById('recently-played');
+            recentlyPlayedContainer.innerHTML = ''; 
+            tracks.forEach(item => {
+                const track = item.track;
+                const li = document.createElement('li');
+                li.innerHTML = `<a href="${track.external_urls.spotify}" target="_blank">${track.name} by ${track.artists.map(artist => artist.name).join(', ')}</a>`;
+                recentlyPlayedContainer.appendChild(li);
+            });
+        }
+
+        // Call fetchUserData on page load
+        window.onload = fetchUserData;
+    </script>
+</head>
+<body>
+    <div class="content">
+        <h1>Streamify Web Player</h1>
+        <p id="user-info">Loading user info...</p>
+        
+        <h2>Your Playlists:</h2>
+        <ul id="playlists"></ul>
+
+        <h2>Your Liked Songs:</h2>
+        <ul id="liked-songs"></ul>
+
+        <h2>Your Recently Played Tracks:</h2>
+        <ul id="recently-played"></ul>
+    </div>
+</body>
+</html>
