@@ -3,45 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Streamify - Spotify Login</title>
+    <title>Streamify - Login</title>
+    <link rel="stylesheet" href="global.css">
     <script>
-        const CLIENT_ID = 'your_spotify_client_id'; // Replace with your Spotify client ID
-        const REDIRECT_URI = 'https://<your-github-username>.github.io/<your-repo-name>/'; // Your GitHub Pages URL
+        // Function to redirect to Spotify login
+        function redirectToSpotify() {
+            const clientId = 'YOUR_SPOTIFY_CLIENT_ID'; // Replace with your Spotify Client ID
+            const redirectUri = 'https://username.github.io/streamify'; // Replace with your redirect URI
+            const scope = 'user-read-private user-read-email user-read-playback-state user-modify-playback-state user-library-read playlist-read-private user-library-modify user-read-recently-played user-top-read';
+            const authUrl = `https://accounts.spotify.com/authorize?response_type=token&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
 
-        // Function to log in to Spotify
-        function loginWithSpotify() {
-            const scopes = 'user-read-playback-state user-modify-playback-state user-read-private';
-            const authUrl = 'https://accounts.spotify.com/authorize?' + new URLSearchParams({
-                client_id: CLIENT_ID,
-                response_type: 'token',
-                redirect_uri: REDIRECT_URI,
-                scope: scopes,
-            });
-
-            // Redirect the user to Spotify's authorization page
-            window.location.href = authUrl;
+            window.location.href = authUrl; // Redirect to Spotify's authorization page
         }
 
-        // Function to extract access token from the URL hash
-        function getAccessTokenFromUrl() {
-            const hash = window.location.hash.substring(1);
-            const params = new URLSearchParams(hash);
-            return params.get('access_token');
-        }
-
-        window.onload = () => {
-            const accessToken = getAccessTokenFromUrl();
-            if (accessToken) {
-                document.getElementById('status').textContent = 'Logged in with Spotify!';
-                document.getElementById('token').textContent = `Access Token: ${accessToken}`;
+        // Handle access token from URL hash
+        window.onload = function() {
+            const hash = window.location.hash;
+            if (hash) {
+                const token = hash.split('&')[0].split('=')[1]; // Extract access token from URL
+                localStorage.setItem('access_token', token); // Store the token in local storage
+                window.location.href = 'player.html'; // Redirect to the player page
             }
-        };
+        }
     </script>
 </head>
 <body>
-    <h1>Welcome to Streamify</h1>
-    <button onclick="loginWithSpotify()">Login with Spotify</button>
-    <p id="status">Not logged in</p>
-    <p id="token"></p>
+    <div class="content">
+        <h1>Welcome to Streamify</h1>
+        <p>Please log in to continue.</p>
+        <button onclick="redirectToSpotify()">Log in with Spotify</button>
+    </div>
 </body>
 </html>
